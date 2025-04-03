@@ -82,34 +82,6 @@ module umiApps './shared/userAssignedIdentity.bicep' = {
 }
 
 
-module openLibertyOnAks './azure.liberty.aks/mainTemplate.bicep' = {
-  name: 'openliberty-on-aks'
-  params: {
-        _artifactsLocation: _artifactsLocation
-        location: location
-        createCluster: createCluster
-        vmSize: vmSize
-        minCount: minCount
-        maxCount: maxCount
-        createACR: createACR
-        deployApplication: deployApplication
-        enableAppGWIngress: enableAppGWIngress
-        appGatewayCertificateOption: appGatewayCertificateOption
-        enableCookieBasedAffinity: enableCookieBasedAffinity
-  }
-   scope: rg
-}
-
-module monitoring './shared/monitoring.bicep' = {
- name: 'monitoring'
- params: {
-   location: location
-   tags: tags
-   logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
-   applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
- }
- scope: rg
-}
 
 module cognitiveservices './shared/cognitiveservices.bicep' = {
   name: 'openai'
@@ -131,39 +103,3 @@ module cognitiveservices './shared/cognitiveservices.bicep' = {
   }
 }
 
-module flexibleserver './shared/flexibleserver.bicep' = {
-  name: 'flexibleserver'
-  scope: rg
-  params: {
-      location: location
-      databaseNames: [
-        'liberty-db-${suffix}'
-      ]
-      name: 'liberty-server-${suffix}'
-      sku: {
-        name: 'Standard_D4ds_v4'
-        tier: 'GeneralPurpose'
-      }
-      storage: {
-        storageSizeGB: 64
-      }
-      version: '15'
-      administratorLogin: dbUserName
-      administratorLoginPassword: dbUserPassword
-      allowAzureIPsFirewall: true
-    }
-}
-
-output AZURE_OPENAI_CLIENT_ID string = umiApps.outputs.principalId
-output AZURE_OPENAI_ENDPOINT string =cognitiveservices.outputs.endpoint
-output AZURE_OPENAI_MODEL_NAME string = openAIModelName
-output AZURE_AKS_CLUSTER_NAME string = openLibertyOnAks.outputs.clusterName
-output AZURE_RESOURCE_GROUP string = rg.name
-output DB_NAME string = 'liberty-db-${suffix}'
-output DB_RESOURCE_NAME string = 'liberty-server-${suffix}'
-output DB_USER_NAME string = dbUserName
-output DB_USER_PASSWORD string = dbUserPassword
-output LOCATION string = location
-output RESOURCE_GROUP_NAME string = rg.name
-output WORKSPACE_ID string = monitoring.outputs.logAnalyticsWorkspaceId
-output APP_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.appInsightsConnectionString
